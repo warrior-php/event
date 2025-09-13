@@ -1,0 +1,13 @@
+{
+  "name": "warrior-php/event",
+  "type": "library",
+  "license": "MIT",
+  "description": "Warrior event plugin",
+  "require": {
+  },
+  "autoload": {
+    "psr-4": {
+      "WarriorPHP\\Event\\": "src"
+    }
+  }
+}
