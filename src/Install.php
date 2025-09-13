@@ -8,24 +8,27 @@ class Install
     const WEBMAN_PLUGIN = true;
 
     /**
+     * 源路径与目标路径的映射关系
+     *
+     * Path relations from plugin source to project destination
+     *
      * @var array
      */
-    protected static $pathRelation = array(
-        'config/plugin/webman/event' => 'config/plugin/webman/event',
-    );
+    protected static array $pathRelation = [
+        'config' => [
+            'path'  => 'config',
+            'files' => ['event.php'],
+        ],
+    ];
 
     /**
      * Install
      *
      * @return void
      */
-    public static function install()
+    public static function install(): void
     {
         static::installByRelation();
-        $event_config_path = config_path() . '/event.php';
-        if (!is_file($event_config_path)) {
-            file_put_contents($event_config_path, "<?php\n\nreturn [\n    \n];\n");
-        }
     }
 
     /**
@@ -33,54 +36,32 @@ class Install
      *
      * @return void
      */
-    public static function uninstall()
+    public static function uninstall(): void
     {
-        $event_config_path = config_path() . '/event.php';
-        if (is_file($event_config_path)) {
-            unlink($event_config_path);
-        }
 
-        self::uninstallByRelation();
     }
 
     /**
-     * installByRelation
+     * 按路径映射关系拷贝文件夹
+     * Install directories/files based on pathRelation map
      *
      * @return void
      */
-    public static function installByRelation()
+    public static function installByRelation(): void
     {
-        foreach (static::$pathRelation as $source => $dest) {
+        foreach (static::$pathRelation as $source => $info) {
+            $dest = $info['path'];
+
+            // 如果目标路径包含目录结构，确保其存在
             if ($pos = strrpos($dest, '/')) {
                 $parent_dir = base_path() . '/' . substr($dest, 0, $pos);
                 if (!is_dir($parent_dir)) {
                     mkdir($parent_dir, 0777, true);
                 }
             }
+
+            // 执行目录复制
             copy_dir(__DIR__ . "/$source", base_path() . "/$dest");
-            echo "Create $dest";
-        }
-    }
-
-    /**
-     * uninstallByRelation
-     *
-     * @return void
-     */
-    public static function uninstallByRelation()
-    {
-        foreach (static::$pathRelation as $source => $dest) {
-            $path = base_path() . "/$dest";
-            if (!is_dir($path) && !is_file($path)) {
-                continue;
-            }
-            echo "Remove $dest";
-            if (is_file($path) || is_link($path)) {
-                unlink($path);
-                continue;
-            }
-
-            remove_dir($path);
         }
     }
 }
